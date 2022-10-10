@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TEST NOTIFICATION</title>
+    <style>
+        body {
+            font-family: sans-serif;
+        }
+        
+        div {
+            text-align: center;
+            background-color: #f2f2f2;
+            padding-bottom: 5rem;
+        }
+        
+        p {
+            background: rgb(235, 140, 16);
+            color: #fff;
+            padding: 1rem;
+        }
+        
+        button {
+            background-color: rgb(235, 140, 16);
+            padding: 1rem;
+            border: 0;
+            color: #fff;
+            font-weight: 900;
+        }
+        
+        button:hover {
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div>
+        <p>
+            SOCKET.IO WEBPUSH NOTIFICATION <b>( WITH CLICK EVENT, SHOW EVNET, CLOSE EVENT )</b>
+        </p>
+        <button id="test_notification">TEST NOTIFICATION</button>
+    </div>
+</body>
+
+</html>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+<script>
+    $(document).ready(function() {
+        $("#test_notification").on("click", function() {
+            const socket = io();
+            const Notification = window.Notification || window.mozNotification || window.webkitNotification;
+            Notification.requestPermission(function(permission) {});
+            const function__ = {
+                notificationpermission: function() {
+                    if (Notification.permission !== 'denied') {
+                        Notification.requestPermission(function(permission) {});
+                    }
+                },
+                showNotificaiton: function(message, body, icon, timeout = 4000) {
+                    this.notificationpermission();
+                    var notificaion = new Notification(
+                        message, {
+                            body: body,
+                            icon: icon,
+                        }
+                    );
+                    notificaion.onclick = function() {
+                        window.open("https://www.example.com");
+                    };
+                    notificaion.onshow = function() {
+                        // When Show take some action
+                    };
+                    notificaion.onclose = function() {
+                        // take action after user close the notification
+                    };
+                    // close notificaion automatically after 4 second
+                    setTimeout(notificaion.close.bind(notificaion), timeout);
+                    return false;
+                },
+                sendPushNotification: function() {
+                    let message = {
+                        message: 'Test',
+                        title: 'Test Notificaion',
+                        icon: './test.png',
+                    }
+                    socket.emit('new_notification', message);
+                },
+            }
+            socket.on('show_notification', function(data) {
+                function__.showNotificaiton(data.title, data.message, data.icon);
+            });
+            function__.sendPushNotification()
+        })
+    })
+</script>
